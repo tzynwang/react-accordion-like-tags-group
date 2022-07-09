@@ -1,3 +1,5 @@
+export type { Theme as MuiTheme } from '@mui/material/styles';
+
 export type Tag = {
   _id: string;
   value: string;

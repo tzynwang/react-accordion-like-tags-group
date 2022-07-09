@@ -1,10 +1,11 @@
 import React, { memo, useState, useEffect } from 'react';
 import { faker } from '@faker-js/faker';
+import { chunk } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { ButtonBase } from '@mui/material';
-import type { Tag, Group, GroupsKey } from './types';
+import { ButtonBase, Chip, Grid, Paper } from '@mui/material';
+import type { Tag, Group, GroupsKey, MuiTheme } from './types';
 
-const GROUPS: Group[] = Array.from({ length: 5 }, (_, i) => ({
+const GROUPS: Group[] = Array.from({ length: 8 }, (_, i) => ({
   _id: uuidv4(),
   value: `Group: ${i}`,
 }));
@@ -33,9 +34,26 @@ const TAGS_4: Tag[] = Array.from({ length: 6 }, (_, i) => ({
   value: faker.name.firstName(),
   parent: 'Group: 4',
 }));
+const TAGS_5: Tag[] = Array.from({ length: 8 }, (_, i) => ({
+  _id: uuidv4(),
+  value: faker.name.firstName(),
+  parent: 'Group: 5',
+}));
+const TAGS_6: Tag[] = Array.from({ length: 6 }, (_, i) => ({
+  _id: uuidv4(),
+  value: faker.name.firstName(),
+  parent: 'Group: 6',
+}));
+const TAGS_7: Tag[] = Array.from({ length: 12 }, (_, i) => ({
+  _id: uuidv4(),
+  value: faker.name.firstName(),
+  parent: 'Group: 7',
+}));
+const GROUP_PER_ROW = 3;
 
 function TagGroup(): React.ReactElement {
   /* States */
+  const [rows, setRows] = useState<React.ReactNode[][]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [currentGroup, setCurrentGroup] = useState<GroupsKey | null>(null);
@@ -56,113 +74,107 @@ function TagGroup(): React.ReactElement {
   /* Hooks */
   useEffect(() => {
     setGroups(GROUPS);
-    setTags([...TAGS_0, ...TAGS_1, ...TAGS_2, ...TAGS_3, ...TAGS_4]);
+    setTags([
+      ...TAGS_0,
+      ...TAGS_1,
+      ...TAGS_2,
+      ...TAGS_3,
+      ...TAGS_4,
+      ...TAGS_5,
+      ...TAGS_6,
+      ...TAGS_7,
+    ]);
   }, []);
+  useEffect(() => {
+    const chunks = chunk(groups, GROUP_PER_ROW);
+    const result = chunks.map((groupRow, groupIndex) => {
+      const row: React.ReactNode[] = groupRow.map((group) => (
+        <Grid item xs={12} sm={4}>
+          <ButtonBase
+            key={group._id}
+            onClick={handleGroupClick(group.value, groupIndex)}
+            sx={{
+              width: '100%',
+              minHeight: '60px',
+              border: '1px solid #333',
+              borderRadius: '4px',
+              backgroundColor: (theme: MuiTheme) =>
+                group.value === currentGroup
+                  ? theme.palette.primary.light
+                  : '#fff',
+              borderColor: (theme: MuiTheme) =>
+                group.value === currentGroup
+                  ? theme.palette.primary.dark
+                  : '#000',
+            }}
+            disableRipple
+            disableTouchRipple
+          >
+            {group.value}
+          </ButtonBase>
+        </Grid>
+      ));
+      return row;
+    });
+    setRows(result);
+  }, [groups, currentGroup]);
   useEffect(() => {
     setCurrentTags(tags.filter((t) => t.parent === currentGroup));
   }, [currentGroup]);
 
   /* Main */
   return (
-    <div>
-      <div>currently click group: {currentGroup}</div>
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        {groups.slice(0, 3).map((group) => (
-          <ButtonBase
-            key={group._id}
-            onClick={handleGroupClick(group.value, 0)}
-            sx={{
-              minWidth: '120px',
-              minHeight: '60px',
-              border: '1px solid #333',
-              borderRadius: '.5rem',
-              backgroundColor: group.value === currentGroup ? '#ccc' : '#fff',
-            }}
-          >
-            {group.value}
-          </ButtonBase>
-        ))}
+    <React.Fragment>
+      <div style={{ marginBottom: '1rem' }}>
+        currently click group: {currentGroup}
       </div>
-      {currentGroup && currentRow === 0 && (
+      {rows.map((row, rowsIndex) => (
         <div
+          key={rowsIndex}
+          className="GroupsWrapper"
           style={{
-            padding: '1rem',
-            display: 'flex',
-            gap: '.5rem',
-            background: 'rgba(0, 0, 0, .3)',
-            transform:
-              currentGroup && currentRow === 0 ? 'scaleY(1)' : 'scaleY(0)',
-            transformOrigin: 'top',
-            transition: 'transform .2s ease-in',
+            marginBottom:
+              currentGroup && currentRow === rowsIndex ? '0' : '1rem',
           }}
         >
-          {currentShowTags.map((tag) => (
-            <div
-              key={tag._id}
-              style={{
-                display: 'inline-flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '4px 8px',
-                backgroundColor: '#EED2C7',
-                color: '#333',
-                borderRadius: '4px',
+          <Grid className="GroupRow" container spacing={2}>
+            {row.map((r, index) => (
+              <React.Fragment key={index}>{r}</React.Fragment>
+            ))}
+          </Grid>
+          {currentGroup && currentRow === rowsIndex && (
+            <Paper
+              className="TagsWrapper"
+              elevation={0}
+              sx={{
+                margin: '1rem auto',
+                padding: '1rem',
+                display: 'flex',
+                gap: '.5rem',
+                flexWrap: 'wrap',
+                background: (theme: MuiTheme) => theme.palette.grey[400],
               }}
             >
-              {tag.value}
-            </div>
-          ))}
+              {currentShowTags.map((tag) => (
+                <Chip
+                  key={tag._id}
+                  label={tag.value}
+                  className="Tag"
+                  sx={{
+                    padding: '4px 8px',
+                    backgroundColor: (theme: MuiTheme) =>
+                      theme.palette.primary.main,
+                    color: (theme: MuiTheme) =>
+                      theme.palette.primary.contrastText,
+                    borderRadius: '4px',
+                  }}
+                />
+              ))}
+            </Paper>
+          )}
         </div>
-      )}
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        {groups.slice(3).map((group) => (
-          <ButtonBase
-            key={group._id}
-            onClick={handleGroupClick(group.value, 1)}
-            sx={{
-              minWidth: '120px',
-              minHeight: '60px',
-              border: '1px solid #333',
-              borderRadius: '.5rem',
-              backgroundColor: group.value === currentGroup ? '#ccc' : '#fff',
-            }}
-          >
-            {group.value}
-          </ButtonBase>
-        ))}
-      </div>
-      {currentGroup && currentRow === 1 && (
-        <div
-          style={{
-            padding: '1rem',
-            display: 'flex',
-            gap: '.5rem',
-            background: 'rgba(0, 0, 0, .3)',
-            transform:
-              currentGroup && currentRow === 1 ? 'scaleY(1)' : 'scaleY(0)',
-            transformOrigin: 'top',
-            transition: 'transform .2s ease-in',
-          }}
-        >
-          {currentShowTags.map((tag) => (
-            <div
-              key={tag._id}
-              style={{
-                display: 'inline-flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '4px 8px',
-                backgroundColor: '#EED2C7',
-                color: '#333',
-                borderRadius: '4px',
-              }}
-            >
-              {tag.value}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      ))}
+    </React.Fragment>
   );
 }
 
