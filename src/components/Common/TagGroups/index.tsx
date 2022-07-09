@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect } from 'react';
 import { faker } from '@faker-js/faker';
 import { chunk } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { ButtonBase, Chip, Paper } from '@mui/material';
+import { ButtonBase, Chip, Grid, Paper } from '@mui/material';
 import type { Tag, Group, GroupsKey, MuiTheme } from './types';
 
 const GROUPS: Group[] = Array.from({ length: 8 }, (_, i) => ({
@@ -89,29 +89,30 @@ function TagGroup(): React.ReactElement {
     const chunks = chunk(groups, GROUP_PER_ROW);
     const result = chunks.map((groupRow, groupIndex) => {
       const row: React.ReactNode[] = groupRow.map((group) => (
-        <ButtonBase
-          key={group._id}
-          onClick={handleGroupClick(group.value, groupIndex)}
-          sx={{
-            flex: '1 1 auto',
-            minWidth: '120px',
-            minHeight: '60px',
-            border: '1px solid #333',
-            borderRadius: '4px',
-            backgroundColor: (theme: MuiTheme) =>
-              group.value === currentGroup
-                ? theme.palette.primary.light
-                : '#fff',
-            borderColor: (theme: MuiTheme) =>
-              group.value === currentGroup
-                ? theme.palette.primary.dark
-                : '#000',
-          }}
-          disableRipple
-          disableTouchRipple
-        >
-          {group.value}
-        </ButtonBase>
+        <Grid item xs={12} sm={4}>
+          <ButtonBase
+            key={group._id}
+            onClick={handleGroupClick(group.value, groupIndex)}
+            sx={{
+              width: '100%',
+              minHeight: '60px',
+              border: '1px solid #333',
+              borderRadius: '4px',
+              backgroundColor: (theme: MuiTheme) =>
+                group.value === currentGroup
+                  ? theme.palette.primary.light
+                  : '#fff',
+              borderColor: (theme: MuiTheme) =>
+                group.value === currentGroup
+                  ? theme.palette.primary.dark
+                  : '#000',
+            }}
+            disableRipple
+            disableTouchRipple
+          >
+            {group.value}
+          </ButtonBase>
+        </Grid>
       ));
       return row;
     });
@@ -136,11 +137,11 @@ function TagGroup(): React.ReactElement {
               currentGroup && currentRow === rowsIndex ? '0' : '1rem',
           }}
         >
-          <div className="GroupRow" style={{ display: 'flex', gap: '1rem' }}>
+          <Grid className="GroupRow" container spacing={2}>
             {row.map((r, index) => (
               <React.Fragment key={index}>{r}</React.Fragment>
             ))}
-          </div>
+          </Grid>
           {currentGroup && currentRow === rowsIndex && (
             <Paper
               className="TagsWrapper"
