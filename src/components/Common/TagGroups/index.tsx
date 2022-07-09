@@ -2,8 +2,8 @@ import React, { memo, useState, useEffect } from 'react';
 import { faker } from '@faker-js/faker';
 import { chunk } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { ButtonBase } from '@mui/material';
-import type { Tag, Group, GroupsKey } from './types';
+import { ButtonBase, Chip, Paper } from '@mui/material';
+import type { Tag, Group, GroupsKey, MuiTheme } from './types';
 
 const GROUPS: Group[] = Array.from({ length: 8 }, (_, i) => ({
   _id: uuidv4(),
@@ -34,7 +34,7 @@ const TAGS_4: Tag[] = Array.from({ length: 6 }, (_, i) => ({
   value: faker.name.firstName(),
   parent: 'Group: 4',
 }));
-const TAGS_5: Tag[] = Array.from({ length: 6 }, (_, i) => ({
+const TAGS_5: Tag[] = Array.from({ length: 8 }, (_, i) => ({
   _id: uuidv4(),
   value: faker.name.firstName(),
   parent: 'Group: 5',
@@ -44,7 +44,7 @@ const TAGS_6: Tag[] = Array.from({ length: 6 }, (_, i) => ({
   value: faker.name.firstName(),
   parent: 'Group: 6',
 }));
-const TAGS_7: Tag[] = Array.from({ length: 6 }, (_, i) => ({
+const TAGS_7: Tag[] = Array.from({ length: 12 }, (_, i) => ({
   _id: uuidv4(),
   value: faker.name.firstName(),
   parent: 'Group: 7',
@@ -98,7 +98,14 @@ function TagGroup(): React.ReactElement {
             minHeight: '60px',
             border: '1px solid #333',
             borderRadius: '4px',
-            backgroundColor: group.value === currentGroup ? '#ccc' : '#fff',
+            backgroundColor: (theme: MuiTheme) =>
+              group.value === currentGroup
+                ? theme.palette.primary.light
+                : '#fff',
+            borderColor: (theme: MuiTheme) =>
+              group.value === currentGroup
+                ? theme.palette.primary.dark
+                : '#000',
           }}
           disableRipple
           disableTouchRipple
@@ -135,34 +142,34 @@ function TagGroup(): React.ReactElement {
             ))}
           </div>
           {currentGroup && currentRow === rowsIndex && (
-            <div
+            <Paper
               className="TagsWrapper"
-              style={{
+              elevation={0}
+              sx={{
                 margin: '1rem auto',
                 padding: '1rem',
                 display: 'flex',
                 gap: '.5rem',
-                background: 'rgba(0, 0, 0, .6)',
+                flexWrap: 'wrap',
+                background: (theme: MuiTheme) => theme.palette.grey[400],
               }}
             >
               {currentShowTags.map((tag) => (
-                <div
+                <Chip
                   key={tag._id}
+                  label={tag.value}
                   className="Tag"
-                  style={{
-                    display: 'inline-flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                  sx={{
                     padding: '4px 8px',
-                    backgroundColor: '#EED2C7',
-                    color: '#333',
+                    backgroundColor: (theme: MuiTheme) =>
+                      theme.palette.primary.main,
+                    color: (theme: MuiTheme) =>
+                      theme.palette.primary.contrastText,
                     borderRadius: '4px',
                   }}
-                >
-                  {tag.value}
-                </div>
+                />
               ))}
-            </div>
+            </Paper>
           )}
         </div>
       ))}
