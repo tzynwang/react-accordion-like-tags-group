@@ -2,7 +2,10 @@ import React, { memo, useState, useEffect } from 'react';
 import { faker } from '@faker-js/faker';
 import { chunk } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
-import { ButtonBase, Chip, Grid, Paper } from '@mui/material';
+import { ButtonBase, Grid, Paper } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import SingleTag from '@Components/Common/Tag';
 import type { Tag, Group, GroupsKey, MuiTheme } from './types';
 
 const GROUPS: Group[] = Array.from({ length: 8 }, (_, i) => ({
@@ -59,6 +62,7 @@ function TagGroup(): React.ReactElement {
   const [currentGroup, setCurrentGroup] = useState<GroupsKey | null>(null);
   const [currentShowTags, setCurrentTags] = useState<Tag[]>([]);
   const [currentRow, setCurrentRow] = useState<number | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   /* Functions */
   const handleGroupClick = (clickedGroup: string, row: number) => () => {
@@ -68,6 +72,13 @@ function TagGroup(): React.ReactElement {
       setCurrentGroup(null);
     } else {
       setCurrentGroup(group);
+    }
+  };
+  const handleTagClick = (tagValue: string) => () => {
+    if (selectedTags.includes(tagValue)) {
+      setSelectedTags((prev) => prev.filter((tag) => tag !== tagValue));
+    } else {
+      setSelectedTags((prev) => [...prev, tagValue]);
     }
   };
 
@@ -156,18 +167,19 @@ function TagGroup(): React.ReactElement {
               }}
             >
               {currentShowTags.map((tag) => (
-                <Chip
+                <SingleTag
                   key={tag._id}
                   label={tag.value}
+                  deleteIcon={
+                    selectedTags.includes(tag.value) ? (
+                      <CloseIcon />
+                    ) : (
+                      <AddIcon />
+                    )
+                  }
+                  selected={selectedTags.includes(tag.value)}
+                  onDelete={handleTagClick(tag.value)}
                   className="Tag"
-                  sx={{
-                    padding: '4px 8px',
-                    backgroundColor: (theme: MuiTheme) =>
-                      theme.palette.primary.main,
-                    color: (theme: MuiTheme) =>
-                      theme.palette.primary.contrastText,
-                    borderRadius: '4px',
-                  }}
                 />
               ))}
             </Paper>
